@@ -1,0 +1,8 @@
+{
+    "dt_server_url": "https://<yourDtTenantId>.live.dynatrace.com",
+    "api_token": "<yourDtToken>",
+    "meraki_token": "<yourMerakiApiKey>",
+    "meraki_org": "<yourMerakiOrganizationName>",
+    "meraki_network": "<yourMerakiNetworkName>",
+    "debug": "DEBUG"
+}
