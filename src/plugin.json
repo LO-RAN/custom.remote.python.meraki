@@ -1,0 +1,94 @@
+{
+	"name": "custom.remote.python.meraki",
+	"version": "0.1",
+	"type": "python",
+	"entity": "CUSTOM_DEVICE",
+	"metricGroup": "tech.Example_Service",
+	"technologies": [
+		"Custom Technology"
+	],
+	"favicon": "https://lh3.googleusercontent.com/gN6iBKP1b2GTXZZoCxhyXiYIAh8QJ_8xzlhEK6csyDadA4GdkEdIEy9Bc8s5jozt1g=w300",
+	"source": {
+		"package": "meraki",
+		"className": "Generator",
+		"install_requires": ["requests"],
+		"activation": "Remote"
+	},
+	"metrics": [],
+	"properties": [
+		{
+			"key": "dt_server_url",
+			"type": "String",
+			"defaultValue": "https://xxxxxxx.live.dynatrace.com"
+		},
+		{
+			"key": "api_token",
+			"type": "Password",
+			"defaultValue": ""
+		},
+		{
+			"key": "meraki_token",
+			"type": "Password",
+			"defaultValue": ""
+		},
+		{
+			"key": "meraki_org",
+			"type": "String",
+			"defaultValue": "ACME Ltd"
+		},
+		{
+			"key": "meraki_network",
+			"type": "String",
+			"defaultValue": "Intranet"
+		},
+		{
+			"key": "debug",
+			"type": "Dropdown",
+			"dropdownValues": [
+				"WARNING",
+				"INFO",
+				"DEBUG"
+			]
+		}
+	],
+	"configUI": {
+		"displayName": "Meraki API devices",
+		"properties": [
+			{
+				"key": "dt_server_url",
+				"displayName": "URL of the Dynatrace server to request",
+				"displayOrder": 1,
+				"displayHint": "URL of the Dynatrace server to request"
+			},
+			{
+				"key": "api_token",
+				"displayName": "API Token",
+				"displayOrder": 2,
+				"displayHint": "Token to access Dynatrace API"
+			},
+			{
+				"key": "meraki_token",
+				"displayName": "meraki API Key",
+				"displayOrder": 3,
+				"displayHint": "token to access Meraki API"
+			},
+			{
+				"key": "meraki_org",
+				"displayName": "Meraki Organization Name",
+				"displayOrder": 4,
+				"displayHint": "the organization under which the network devices are to be retrieved"
+			},
+			{
+				"key": "meraki_network",
+				"displayName": "Meraki Network Name",
+				"displayOrder": 4,
+				"displayHint": "the network under which the network devices are to be retrieved"
+			},
+			{
+				"key": "debug",
+				"displayName": "Choose debug level",
+				"displayOrder": 5
+			}
+		]
+	}
+}
