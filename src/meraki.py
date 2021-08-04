@@ -1,6 +1,3 @@
-#   curl -X GET "https://api.meraki.com/api/v1/organizations" -H "X-Cisco-Meraki-API-Key: 1c14216f3ce4e712caff72f4e62374c524c985bd"
-
-
 from ruxit.api.base_plugin import RemoteBasePlugin
 import json
 import logging
