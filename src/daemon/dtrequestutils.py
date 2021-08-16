@@ -1,29 +1,36 @@
 import requests
+from requests import ReadTimeout, ConnectTimeout, HTTPError, Timeout, ConnectionError
+
 import json
 import logging
 
 # --------------------------------------------------------------------------------
-
-
 def getorganizations(thekey):
-    # get Meraki organizations
-    ro = requests.get(
-        'https://api.meraki.com/api/v1/organizations',
-        headers={
-            'X-Cisco-Meraki-API-Key': thekey
-        },
-        verify=False
-    )
+    orgs = []
 
-    # error ?
-    if(ro.status_code != 200):
-        logging.error(ro.status_code, ro.reason, ro.text)
-        return []
+    try:
 
-    logging.debug(ro.text)
-    # parse retrieved data as json
-    orgs = json.loads(ro.text)
-    logging.info("Found "+str(len(orgs))+" organizations.")
+        # get Meraki organizations
+        with requests.get(
+            'https://api.meraki.com/api/v1/organizations',
+            headers={
+                'X-Cisco-Meraki-API-Key': thekey
+            },
+            verify=False
+        ) as ro:
+
+            # error ?
+            if(ro.status_code != 200):
+                logging.error(ro.status_code, ro.reason, ro.text)
+                return []
+
+            logging.debug(ro.text)
+            # parse retrieved data as json
+            orgs = json.loads(ro.text)
+            logging.info("Found "+str(len(orgs))+" organizations.")
+    except (ConnectTimeout, HTTPError, Timeout, ConnectionError):
+        # handle ConnectionError the exception
+        logging.error("Issue in getting Meraki organizations")
     return orgs
 # --------------------------------------------------------------------------------
 
@@ -47,26 +54,31 @@ def getorganizationid(theorg, theorgs):
 
 
 def getnetworks(theorgid, thekey):
-    rn = requests.get(
-        'https://api.meraki.com/api/v1/organizations/'+theorgid+'/networks',
-        headers={
-            'X-Cisco-Meraki-API-Key': thekey
-        },
-        verify=False
-    )
+    networks = []
+    try:
+        with requests.get(
+            'https://api.meraki.com/api/v1/organizations/'+theorgid+'/networks',
+            headers={
+                'X-Cisco-Meraki-API-Key': thekey
+            },
+            verify=False
+        ) as rn:
 
-    # error ?
-    if(rn.status_code != 200):
-        logging.error(rn.status_code, rn.reason, rn.text)
-        return[]
+            # error ?
+            if(rn.status_code != 200):
+                logging.error(rn.status_code, rn.reason, rn.text)
+                return[]
 
-    logging.debug(rn.text)
+            logging.debug(rn.text)
 
-    # parse retrieved data as json
-    networks = json.loads(rn.text)
+            # parse retrieved data as json
+            networks = json.loads(rn.text)
 
-    logging.info("Found "+str(len(networks)) +
-                 " networks for organization id "+theorgid+".")
+            logging.info("Found "+str(len(networks)) +
+                    " networks for organization id "+theorgid+".")
+    except (ConnectTimeout, HTTPError, Timeout, ConnectionError):
+        # handle ConnectionError the exception
+        logging.error("Issue in getting Meraki networks for "+theorgid)
 
     return networks
 
@@ -74,109 +86,129 @@ def getnetworks(theorgid, thekey):
 
 
 def getdevices(thenetworkid, thekey):
-    # get devices for network
-    rd = requests.get(
-        'https://api.meraki.com/api/v1/networks/' +
-        thenetworkid+'/devices',
-        headers={
-            'X-Cisco-Meraki-API-Key': thekey
-        },
-        verify=False
-    )
+    devices = []
+    try:
+        # get devices for network
+        with requests.get(
+            'https://api.meraki.com/api/v1/networks/' +
+            thenetworkid+'/devices',
+            headers={
+                'X-Cisco-Meraki-API-Key': thekey
+            },
+            verify=False
+        ) as rd:
 
-    # error ?
-    if(rd.status_code != 200):
-        logging.error(rd.status_code, rd.reason, rd.text)
-        return []
+            # error ?
+            if(rd.status_code != 200):
+                logging.error(rd.status_code, rd.reason, rd.text)
+                return []
 
-    logging.debug(rd.text)
+            logging.debug(rd.text)
 
-    # parse retrieved data as json
-    devices = json.loads(rd.text)
+            # parse retrieved data as json
+            devices = json.loads(rd.text)
 
-    logging.info("Found "+str(len(devices)) +
-                 " devices for network id "+thenetworkid+".")
+            logging.info("Found "+str(len(devices)) +
+                    " devices for network id "+thenetworkid+".")
+    except (ConnectTimeout, HTTPError, Timeout, ConnectionError):
+        # handle ConnectionError the exception
+        logging.error("Issue in getting Meraki devices for "+thenetworkid)
+
     return devices
 
 # --------------------------------------------------------------------------------
 
 
 def getclients(thedeviceid, thekey, thetimespan):
-    rc = requests.get(
-        'https://api.meraki.com/api/v1/devices/' +
-        thedeviceid+'/clients',
-        params={
-            'timespan': thetimespan
-        },
-        headers={
-            'X-Cisco-Meraki-API-Key': thekey
-        },
-        verify=False
-    )
+    clients = []
 
-    # error ?
-    if(rc.status_code != 200):
-        logging.error(rc.status_code, rc.reason, rc.text)
-        return []
+    try:
+        with requests.get(
+            'https://api.meraki.com/api/v1/devices/' +
+            thedeviceid+'/clients',
+            params={
+                'timespan': thetimespan
+            },
+            headers={
+                'X-Cisco-Meraki-API-Key': thekey
+            },
+            verify=False
+        ) as rc:
 
-    logging.debug(rc.text)
+            # error ?
+            if(rc.status_code != 200):
+                logging.error(thedeviceid, rc.status_code, rc.reason, rc.text)
+                return []
 
-    # parse retrieved data as json
-    clients = json.loads(rc.text)
+            logging.debug(rc.text)
 
-    logging.info("Found "+str(len(clients)) +
-                 " clients for device id "+thedeviceid+".")
+            # parse retrieved data as json
+            clients = json.loads(rc.text)
+
+            logging.info("Found "+str(len(clients)) +
+                    " clients for device id "+thedeviceid+".")
+    except (ConnectTimeout, HTTPError, Timeout, ConnectionError):
+        # handle ConnectionError the exception
+        logging.error("Issue in getting Meraki clients for "+thedeviceid)
 
     return clients
 # --------------------------------------------------------------------------------
 
 
 def getuplinks(thenetworkid, thedeviceid, thekey):
+    uplinks = []
 
-    ru = requests.get(
-        'https://api.meraki.com/api/v0/networks/' +
-        thenetworkid+'/devices/'+thedeviceid+'/uplink',
-        headers={
-            'X-Cisco-Meraki-API-Key': thekey
-        },
-        verify=False
-    )
+    try:
+        with requests.get(
+            'https://api.meraki.com/api/v0/networks/' +
+            thenetworkid+'/devices/'+thedeviceid+'/uplink',
+            headers={
+                'X-Cisco-Meraki-API-Key': thekey
+            },
+            verify=False
+        ) as ru:
 
-    # error ?
-    if(ru.status_code != 200):
-        logging.error(ru.status_code, ru.reason, ru.text)
-        return []
+            # error ?
+            if(ru.status_code != 200):
+                logging.error(ru.status_code, ru.reason, ru.text)
+                return []
 
-    logging.debug(ru.text)
+            logging.debug(ru.text)
 
-    # parse retrieved data as json
-    uplinks = json.loads(ru.text)
+            # parse retrieved data as json
+            uplinks = json.loads(ru.text)
 
-    logging.info("Found "+str(len(uplinks)) +
-                 " UpLinks for device id "+thedeviceid+".")
+            logging.info("Found "+str(len(uplinks)) +
+                    " UpLinks for device id "+thedeviceid+".")
+    except (ConnectTimeout, HTTPError, Timeout, ConnectionError):
+        # handle ConnectionError the exception
+        logging.error("Issue in getting Meraki uplinks for "+thedeviceid)
 
     return uplinks
 
 # --------------------------------------------------------------------------------
 
-
 def sendtodynatrace(theresult, theurl, thetoken):
+    try:
+        with requests.post(
+            theurl+'/api/v2/metrics/ingest',
+            data=theresult,
+            headers={
+                'Authorization': "Api-Token " + thetoken,
+                'accept': '*/*',
+                'Content-Type': 'text/plain; charset=utf-8'
+            },
+            verify=False
+        ) as rdt:
 
-    rdt = requests.post(
-        theurl+'/api/v2/metrics/ingest',
-        data=theresult,
-        headers={
-            'Authorization': "Api-Token " + thetoken,
-            'Content-Type': 'text/plain; charset=utf-8'
-        },
-        verify=False
-    )
-
-    # error ?
-    if(rdt.status_code != 202):
-        logging.error(rdt.status_code, rdt.reason, rdt.text)
-    else:
-        logging.info(
-            "Successfully pushed "+str(theresult.count('\n'))+" metrics data to Dynatrace ingestion endpoint.")
-        logging.debug(rdt.text)
+            # error ?
+            if(rdt.status_code != 202):
+                logging.error(rdt.status_code, rdt.reason, rdt.text)
+            else:
+                logging.info(
+                "Successfully pushed "+str(theresult.count('\n'))+" metrics data to Dynatrace ingestion endpoint.")
+                logging.debug(rdt.text)
+    except (ConnectTimeout, HTTPError, Timeout, ConnectionError):
+        # handle ConnectionError the exception
+        logging.error("Issue in sending data to Dynatrace")
 # --------------------------------------------------------------------------------
