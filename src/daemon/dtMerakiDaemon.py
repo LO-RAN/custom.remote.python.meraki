@@ -6,11 +6,15 @@ import os
 import sys
 
 import dtrequestutils as rq
+import datetime
 
 
-logging.basicConfig(filename=os.path.join(sys.path[0], "dtMerakiDaemon.log"),format='%(asctime)s %(message)s', level=logging.INFO)
+logging.basicConfig(filename=os.path.join(sys.path[0], "dtMerakiDaemon.log"),filemode='w',format='%(asctime)s %(message)s', level=logging.INFO)
 
 requests.packages.urllib3.disable_warnings()
+
+
+logging.info("Starting at "+datetime.datetime.now().strftime("%y-%m-%d %H:%M:%S"))
 
 # open properties file
 config = configparser.ConfigParser()
@@ -41,20 +45,26 @@ if orgid == "":
 # get  networks for organization
 networks = rq.getnetworks(orgid, merakikey)
 
-# the resulting data we will push to Dynatrace API as metrics ingestion
-result = ""
-
 for network in networks:
     # get devices for network
     devices = rq.getdevices(network["id"], merakikey)
 
     for device in devices:
+        # the resulting data we will push to Dynatrace API as metrics ingestion
+        result = ""
+
         # get clients for device
         clients = rq.getclients(device["serial"], merakikey,merakitimespan)
 
+        # warning: name can be missing !!
+        if("name" in device):
+            devicename=device["name"]
+        else:
+            devicename=device["serial"]
+
         # build the metrics line for Dynatrace ingestion
         ingestline = "meraki.device.clients"\
-            + ",device="+device["name"].replace(" ", "_")\
+            + ",device="+devicename.replace(" ", "_")\
             + ",model="+device["model"].replace(" ", "_")\
             + ",network="+network["name"].replace(" ", "_")\
             + ",org="+merakiorg.replace(" ", "_")\
@@ -90,5 +100,7 @@ for network in networks:
             result += ingestline
 
 
-# finally send overall result (all the metric lines) to Dynatrace
-rq.sendtodynatrace(result, dttenanturl, dttoken)
+        # finally send overall result (all the metric lines) to Dynatrace
+        rq.sendtodynatrace(result, dttenanturl, dttoken)
+
+logging.info("Ending at "+datetime.datetime.now().strftime("%y-%m-%d %H:%M:%S"))
